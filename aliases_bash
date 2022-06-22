@@ -1,0 +1,20 @@
+# This is a .bash_aliases file for shared aliases to functions.
+# Sourced from file .bash-dev-env
+
+
+# Git terminal config options (shows the current git branch colored)
+export GIT_PS1_SHOWCOLORHINTS=true # Option for git-prompt.sh to show branch name in color
+export GIT_PS1_SHOWDIRTYSTATE=true
+# Terminal Prompt:
+# Include git branch, use PROMPT_COMMAND (not PS1) to get color output (see git-prompt.sh for more)
+#export PROMPT_COMMAND='__git_ps1 "\w" "\n\\\$ "' # Git branch (relies on git-prompt.sh)
+export PROMPT_COMMAND=$(sed -r 's|^(.+)(\\\$\s*)$|__git_ps1 "\1" "\2"|' <<< $PS1)
+
+#export PS1='[\u@\h \W$(__git_ps1 " (%s)")]\$ '
+YOCTO_INIT_SCRIPT_PATH="${YOCTO_INIT_SCRIPT_PATH:-$PWD}"
+#aliases/shortcuts
+alias reload=". ~/.bashrc"
+alias init-yocto-build="source ${YOCTO_INIT_SCRIPT_PATH}"
+
+# git typo aliases
+alias sit="git"

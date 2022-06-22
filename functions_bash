@@ -1,0 +1,141 @@
+#! /bin/bash
+# File to contain shared bash functions.
+# Sourced from file .bash-dev-env
+
+# Global to store the bitbake spawned process names. Used in more than one function.
+BITBAKE_PROCESSES="bitbake|pseudo|make|opkg|clang|aarch64-oe-linux-gcc"
+
+#######################################################################################################################
+# Run SWUPDATE on an ethernet connected fangtooth board
+# 
+# ARGUMENTS:
+#   ip - Ip address of connected fangtooth board
+#   file - full path of the .swu file 
+#####################################################################################################################
+function swupdate ()
+{
+    if [ ! -f "/home/$USER/swupdate_client.py" ]
+    then
+        echo "Downloading swupdate_client.py"
+        curPath=$PWD
+        cd ~
+        wget https://raw.githubusercontent.com/sbabic/swupdate/master/examples/client/swupdate_client.py
+        chmod +x swupdate_client.py
+        cd $curPath
+        echo "done"
+    fi
+    ip=$1
+    file=$2
+    port=$3
+     ~/swupdate_client.py $file $ip $port
+}
+
+#######################################################################################################################
+# determine how many processes are used by each user on a shared server. Has a parameter to specify a specific process
+# GLOBALS:
+#   BITBAKE_PROCESSES
+# ARGUMENTS:
+#   processes - (optional) filter to a process or group of processes example: "python3" or "python3|ssh"
+#               if 'bitbake' is used, the bitbake process variable is used instead.
+# OUTPUTS:
+#   Write list of (user): (number of processes) that meet the criteria of the process filter to stdout
+# RETURN:
+#   0 if print succeeds, non-zero on error.
+#####################################################################################################################
+function blame () {
+    processes=$1
+    echo "Processes in use:"
+    if [ -z $processes ]
+    then
+        ps aux | grep -v "grep" | tr -s ' ' | cut -d ' ' -f 1 | sort | uniq -c  | sort -rn | awk '{print $2 ":", $1}'
+    elif [ "$process" == "bitbake" ]
+    then
+        ps aux | grep -E $BITBAKE_PROCESSES | grep -v "grep" | tr -s ' ' | cut -d ' ' -f 1 | sort | uniq -c  | sort -rn | awk '{print $2 ":", $1}'
+    else
+        ps aux | grep -E $processes | grep -v "grep" | tr -s ' ' | cut -d ' ' -f 1 | sort | uniq -c  | sort -rn | awk '{print $2 ":", $1}'
+    fi
+}
+
+#######################################################################################################################
+# List all processes started by $USER
+# ARGUMENTS:
+#   None
+# OUTPUTS:
+#   Writes list of (count): (name of process) to stdout that the current user is running
+# RETURN:
+#   0 if print succeeds, non-zero on error.
+#####################################################################################################################
+function whatamirunning ()
+{
+    ps aux | grep $USER | grep -v "grep" | tr -s ' ' | cut -d ' ' -f 11 | sort | uniq -c  | sort -rn
+}
+
+#######################################################################################################################
+# designed to kill all bitbake processes and remove LOCK and SOCK files when run in build directory
+# GLOBALS:
+#   BITBAKE_PROCESSES - (.bash_functions)
+# ARGUMENTS:
+#   None
+# OUTPUTS:
+#   Writes number of processes killed. Lists name of lock and sock files removed
+# RETURN:
+#   0 if print succeeds, non-zero on error.
+#####################################################################################################################
+function killbitbake () {
+    it=0
+    for pid in $(ps aux | grep $USER | grep -E "$BITBAKE_PROCESSES" | grep -v "grep" | tr -s ' ' | cut -d ' ' -f 2)
+    do
+        kill -9 $pid
+        ((it++))
+    done
+    echo "Killed $it processes"
+    if [ $(echo $PWD | grep build) ]; then
+        for file in $(ls *.lock  *.sock 2>/dev/null )
+        do
+            echo "    removed: $file"
+            rm $PWD/$file
+        done
+    fi
+}
+
+#######################################################################################################################
+# build server command to check how much space would be freed as of tomorrow (any file older than 29 days)
+# GLOBALS:
+#   YOCTO_SSTATE_DIR - (.bash-dev-env)
+# ARGUMENTS:
+#   NA
+# OUTPUTS:
+#   Writes "#G will be freed from the sstate" to stdout where #G is the calculated space to be freed.
+# RETURN:
+#   0 if print succeeds, non-zero on error.
+#####################################################################################################################
+function sstate_check()
+{
+    YOCTO_SSTATE_DIR=$1
+    if [ -d ${YOCTO_SSTATE_DIR} ]; then
+        size=$(find ${YOCTO_SSTATE_DIR} -atime +29 -printf "%s\n" | gawk -M '{t+=$1}END{print t}')
+        if [ "$size" == "" ]; then
+        echo "nothing will be freed tomorrow"
+        else
+        si_size=$(numfmt --to=si $size)
+        echo "$si_size will be freed from the sstate"
+        fi
+    fi
+}
+
+#######################################################################################################################
+# Destroy all processes started by $USER.
+# Used in the event you have too many processes running and you want to take a hammer to the solution
+# GLOBALS:
+#   USER
+# ARGUMENTS:
+#   NA
+# OUTPUTS:
+#   NA
+# RETURN:
+#   NA
+#####################################################################################################################
+function killme()
+{
+    kill -9 $(pgrep -u $USER)
+}
