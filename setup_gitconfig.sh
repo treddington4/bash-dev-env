@@ -24,6 +24,8 @@ git config --global user.email $email
 git config --global user.username $username
 git config --global safe.directory "*"
 git config --global commit.template $_env/git_commit_msg_template.txt
+git config --global alias.lg "log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit"
+
 if [ ! -z "$editor" ]; then
     git config --global core.editor $editor
 fi
