@@ -3,8 +3,8 @@ The bash-dev-environment repo introduces common aliases and functions into your 
 **Example**:
 ```
 # sourcing bash development enviroment
-if [ -f $HOME/bash-dev-environment/.bash-dev-env ]; then
-   . $HOME/bash-dev-environment/.bash-dev-env
+if [ -f $HOME/bash-dev-environment/.bash_dev_includes ]; then
+   . $HOME/bash-dev-environment/.bash_dev_includes
 fi
 ```
 # bashconfig

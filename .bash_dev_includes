@@ -1,10 +1,10 @@
 
 bash_dev_env=$( dirname -- "${BASH_SOURCE[0]}" )
 
-if [ -f $bash_dev_env/.bash_functions ]; then
-    . $bash_dev_env/.bash_functions
+if [ -f $bash_dev_env/functions_bash ]; then
+    . $bash_dev_env/functions_bash
 fi
 
-if [ -f $bash_dev_env/.bash_aliases ]; then
-    . $bash_dev_env/.bash_aliases
+if [ -f $bash_dev_env/aliases_bash ]; then
+    . $bash_dev_env/aliases_bash
 fi
