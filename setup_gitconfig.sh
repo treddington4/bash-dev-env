@@ -19,11 +19,14 @@ done
 printf "Enter default editor or hit enter for default (Nano): "
 read editor
 
+mkdir ~/.git_template/hooks
+
 git config --global user.name $name
 git config --global user.email $email
 git config --global user.username $username
 git config --global safe.directory "*"
-git config --global commit.template $_env/git_commit_msg_template.txt
+git config --global commit.template $_env/.git_template/git_commit_msg_template.txt
+git config --global core.hooksPath $_env/.git_template/hooks
 git config --global alias.lg "log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit"
 
 if [ ! -z "$editor" ]; then
