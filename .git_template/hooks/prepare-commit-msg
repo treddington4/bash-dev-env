@@ -13,4 +13,5 @@ if [ $? -ne 0 ]; then
     exit
 fi
 # issue key matched from branch prefix, prepend to commit message
-sed -i -e "1s/^/$ISSUE_KEY /" $1
+sed -i -e "s/#JIRA_TICKET_NUMBER/$ISSUE_KEY /" $1
+# sed -i -e "1s/^/$ISSUE_KEY /" $1
